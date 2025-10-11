@@ -19,13 +19,13 @@ class MainApp extends StatefulWidget {
  class _MainAppState extends State<MainApp> {
   int selectedIndex = 0;
 
-  final List<Widget> pages = const [
-    Wallet(),
-    Graph(),
-    Add(),
-    Notifications(),
-    Settings(),
-  ];
+final List<Widget> pages = [
+  WalletPage(yatirimlar: globalYatirimlar),
+  const Graph(),
+  const Add(),
+  const Notifications(),
+  const Settings(),
+];
 
   @override
   Widget build(BuildContext context) {
