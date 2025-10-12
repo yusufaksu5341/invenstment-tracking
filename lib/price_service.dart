@@ -1,17 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// Basit TTL cache'li fiyat servisimiz.
-/// - Kripto: Binance -> USDT fiyatı + USDT/TRY çarpanı
-/// - Altın : Trunçgil today.json (TRY)
-/// - Hisse : (Opsiyonel) Yahoo Finance (unstable); TRY değilse USDT/TRY ile çevrilir.
+
 class PriceService {
   PriceService._();
   static final PriceService instance = PriceService._();
 
   final http.Client _client = http.Client();
 
-  // --- USDT/TRY ---
   double? _usdtTry;
   DateTime? _usdtTryTs;
   final Duration _usdtTryTtl = const Duration(seconds: 60);
@@ -21,18 +17,15 @@ class PriceService {
   final Map<String, DateTime> _cryptoUsdtTs = {};
   final Duration _cryptoTtl = const Duration(seconds: 30);
 
-  // --- ALTIN TRY cache (komple tabloyu cache'ler) ---
   Map<String, double>? _goldTry;
   DateTime? _goldTs;
   final Duration _goldTtl = const Duration(minutes: 10);
 
-  // --- Yardımcı: temiz sayı parse (1.234,56 -> 1234.56) ---
   double? _parseTrNum(String s) {
     final cleaned = s.replaceAll('.', '').replaceAll(',', '.');
     return double.tryParse(cleaned);
   }
 
-  // --- USDTTRY ---
   Future<double> _getUsdtTry() async {
     final now = DateTime.now();
     if (_usdtTry != null &&
@@ -52,7 +45,6 @@ class PriceService {
     }
   }
 
-  // --- KRIPTO ---
   Future<double?> getCryptoPriceTry(String baseAsset) async {
     final usdt = await _getCryptoPriceUsdt(baseAsset);
     if (usdt == null) return null;
@@ -86,7 +78,6 @@ final symbol = '${key}USDT';
     return null;
   }
 
-  // --- ALTIN (Trunçgil today.json) ---
   Future<void> _ensureGold() async {
     final now = DateTime.now();
     if (_goldTry != null && _goldTs != null && now.difference(_goldTs!) < _goldTtl) {
@@ -96,7 +87,6 @@ final symbol = '${key}USDT';
     final res = await _client.get(uri);
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      // İlgilendiğimiz kalemler: Gram Altın, Çeyrek Altın, Tam Altın, Cumhuriyet Altını (Satış)
       final map = <String, double>{};
       double? sat(String keyTr) {
         final obj = data[keyTr];
@@ -129,15 +119,12 @@ final symbol = '${key}USDT';
     return _goldTry?[altinTipi];
   }
 
-  // --- HISSE (opsiyonel/unstable): Yahoo Finance ---
-  // Bu uç nokta resmi değildir ve zaman zaman cookie/crumb isteyebilir.
-  // Başarısız olursa null döner.
+
   Future<double?> getStockPriceTry(String displayName) async {
-    // İhtiyaca göre harita genişletilebilir
     final map = <String, String>{
       'Ebebek': 'EBEBK.IS',
-      'BIENY': 'BIENY', // USD olabilir
-      'BIGCH': 'BIGCH', // USD olabilir
+      'BIENY': 'BIENY',
+      'BIGCH': 'BIGCH', 
     };
     final symbol = map[displayName];
     if (symbol == null) return null;
@@ -159,20 +146,16 @@ final symbol = '${key}USDT';
         if (price == null) return null;
 
         if (currency == 'TRY') return price;
-        // USD veya USDT ise USDTTRY ile çevir
         if (currency == 'USD' || currency == 'USDT' || currency == null) {
           final k = await _getUsdtTry();
           return price * k;
         }
-        // Diğer para birimleri için burada genişletilebilir
       }
     } catch (_) {
-      // yoksay
     }
     return null;
   }
 
-  /// Tek bir yatırım için TL birim fiyatını döndürür.
   Future<double?> getUnitPriceTry({
     required String tur,
     required String adi,
