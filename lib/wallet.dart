@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'add.dart'; // Yatirim modelini buradan alıyoruz
+import 'add.dart';
 
 class WalletPage extends StatefulWidget {
   final List<Yatirim> yatirimlar;
@@ -13,15 +13,13 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
-  // Fiyat cache'leri
-  double? _usdtTry;                            // USDT/TRY (güncel)
-  final Map<String, double> _cryptoUsdt = {};  // COIN -> USDT (güncel)
-  Map<String, double>? _goldTry;               // Altın (güncel, TRY)
+  double? _usdtTry;                            
+  final Map<String, double> _cryptoUsdt = {};  
+  Map<String, double>? _goldTry;               
 
-  // Kart bazlı: güncel birim fiyat (TL), satır toplam (TL), PnL (TL)
   final Map<int, double?> _unitTryNow = {};
   final Map<int, double?> _lineTry = {};
-  final Map<int, double?> _pnlTry = {}; // (now - buy) * qty
+  final Map<int, double?> _pnlTry = {}; 
 
   bool _loading = false;
 
@@ -31,7 +29,6 @@ class _WalletPageState extends State<WalletPage> {
     _refreshPrices();
   }
 
-  // ---------- Güncel fiyat yardımcıları ----------
   double? _parseTrNum(String s) {
     final cleaned = s.replaceAll('.', '').replaceAll(',', '.');
     return double.tryParse(cleaned);
@@ -109,7 +106,6 @@ class _WalletPageState extends State<WalletPage> {
       await _ensureGoldNow();
       return _goldTry?[y.adi];
     }
-    // Hisse: burada ekleyebiliriz (şimdilik yok)
     return null;
   }
 
@@ -124,7 +120,6 @@ class _WalletPageState extends State<WalletPage> {
         _unitTryNow[i] = unitNow;
         _lineTry[i] = (unitNow != null) ? unitNow * y.miktar : null;
 
-        // PnL: (now - buy) * qty  (sadece alimBirimFiyatiTry varsa)
         final buy = y.alimBirimFiyatiTry;
         if (buy != null && unitNow != null) {
           _pnlTry[i] = (unitNow - buy) * y.miktar;
@@ -137,13 +132,12 @@ class _WalletPageState extends State<WalletPage> {
         _pnlTry[i] = null;
       }
 
-      if (mounted) setState(() {}); // satır satır güncelle
+      if (mounted) setState(() {}); 
     }
 
     if (mounted) setState(() => _loading = false);
   }
 
-  // ---------- Logo (çok kaynaklı) ----------
   final Map<String, String?> _logoUrlCache = {};
   final Map<String, Future<String?>> _logoFutureCache = {};
 
@@ -292,7 +286,7 @@ class _WalletPageState extends State<WalletPage> {
         border: Border.all(color: color.withOpacity(.5)),
       ),
       child: Text(
-        'PnL: $sign${_formatTry(pnl).substring(1)}', // ₺ işaretini sadece başa koyacağız
+        'PnL: $sign${_formatTry(pnl).substring(1)}',
         style: TextStyle(color: color, fontWeight: FontWeight.w700),
       ),
     );
@@ -309,7 +303,7 @@ class _WalletPageState extends State<WalletPage> {
           // Kart gövdesi
           Card(
             elevation: 4,
-            margin: const EdgeInsets.only(top: 18), // üstte chip için boşluk
+            margin: const EdgeInsets.only(top: 18), 
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
@@ -335,7 +329,6 @@ class _WalletPageState extends State<WalletPage> {
                     ),
                   ),
 
-                  // Sağ: TL toplam (miktar × birim şimdi)
                   Text(
                     _formatTry(line),
                     style: const TextStyle(
@@ -346,7 +339,6 @@ class _WalletPageState extends State<WalletPage> {
             ),
           ),
 
-          // Üst chip: PnL
           Positioned(
             left: 24,
             top: 0,
