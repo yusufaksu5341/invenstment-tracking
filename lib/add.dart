@@ -6,13 +6,12 @@ import 'package:http/http.dart' as http;
 
 import 'wallet.dart';
 
-// Yatırım modeli (ALIM TARİHİ + ALIM BİRİM FİYATI eklendi)
 class Yatirim {
   final String tur;
   final String adi;
   final double miktar;
-  final DateTime? alimTarihi;          // eklenen alan (isteğe bağlı)
-  final double? alimBirimFiyatiTry;    // o tarihteki TL birim fiyat (varsa)
+  final DateTime? alimTarihi;          
+  final double? alimBirimFiyatiTry;    
 
   Yatirim({
     required this.tur,
@@ -23,7 +22,6 @@ class Yatirim {
   });
 }
 
-// Global yatırım listesi
 List<Yatirim> globalYatirimlar = [];
 
 class Add extends StatefulWidget {
@@ -35,22 +33,20 @@ class Add extends StatefulWidget {
 
 class _AddState extends State<Add> {
   String? selectedTur;
-  String? selectedAdi;  // Kripto
-  String? selectedAdi2; // Altın
-  String? selectedAdi3; // Hisse
+  String? selectedAdi;  
+  String? selectedAdi2; 
+  String? selectedAdi3; 
   String? miktar;
 
-  DateTime? alimTarihi; // YENİ: Alım tarihi
+  DateTime? alimTarihi; 
 
   final List<String> turList = ['Hisse', 'Altın', 'Kripto'];
   final List<String> altinList = ['Gram', 'Çeyrek', 'Tam', 'Cumhuriyet'];
   final List<String> hisseList = ['Ebebek', 'BIENY', 'BIGCH'];
 
-  // Kripto coin listesi (Binance USDT pazarından)
   List<String> coinList = [];
   bool coinLoading = false;
 
-  // Arama + debounce
   String coinQuery = '';
   final TextEditingController _searchCtrl = TextEditingController();
   Timer? _debounce;
@@ -87,7 +83,6 @@ class _AddState extends State<Add> {
       });
     } else {
       setState(() => coinLoading = false);
-      // Sessiz geç
     }
   }
 
@@ -104,13 +99,11 @@ class _AddState extends State<Add> {
     });
   }
 
-  // ----------- Tarihsel KRİPTO fiyatı (Binance 1D kline) -> TL -----------
 
   Future<double?> _binanceCloseOnDay({
-    required String symbol, // ör. BTCUSDT veya USDTTRY
+    required String symbol, 
     required DateTime day,
   }) async {
-    // UTC gün aralığı
     final start = DateTime.utc(day.year, day.month, day.day);
     final end = start.add(const Duration(days: 1));
     final startMs = start.millisecondsSinceEpoch;
@@ -125,7 +118,7 @@ class _AddState extends State<Add> {
         final arr = jsonDecode(res.body);
         if (arr is List && arr.isNotEmpty) {
           final k = arr[0] as List;
-          final closeStr = k[4].toString(); // close
+          final closeStr = k[4].toString(); 
           return double.tryParse(closeStr);
         }
       }
@@ -134,7 +127,7 @@ class _AddState extends State<Add> {
   }
 
   Future<double?> _cryptoUnitTryOn({
-    required String baseAsset,  // ör. BTC
+    required String baseAsset,  
     required DateTime day,
   }) async {
     final sym = '${baseAsset.toUpperCase()}USDT';
@@ -147,7 +140,6 @@ class _AddState extends State<Add> {
     return closeUsdt * closeUsdtTry;
   }
 
-  // -----------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +214,6 @@ class _AddState extends State<Add> {
                 ),
               ),
 
-              // KRİPTO
               if (selectedTur == 'Kripto') ...[
                 const SizedBox(height: 16),
                 const Text('Yatırım Adı (Binance)',
@@ -272,7 +263,6 @@ class _AddState extends State<Add> {
                   ),
               ],
 
-              // ALTIN
               if (selectedTur == 'Altın') ...[
                 const SizedBox(height: 16),
                 const Text('Yatırım Adı',
@@ -292,7 +282,6 @@ class _AddState extends State<Add> {
                 ),
               ],
 
-              // HİSSE
               if (selectedTur == 'Hisse') ...[
                 const SizedBox(height: 16),
                 const Text('Yatırım Adı',
@@ -312,7 +301,6 @@ class _AddState extends State<Add> {
                 ),
               ],
 
-              // Alım Tarihi (isteğe bağlı)
               const SizedBox(height: 16),
               const Text('Alım Tarihi (isteğe bağlı)',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -339,7 +327,7 @@ class _AddState extends State<Add> {
                       final picked = await showDatePicker(
                         context: context,
                         initialDate: alimTarihi ?? now,
-                        firstDate: DateTime(2017, 1, 1), // Binance başlangıç için güvenli aralık
+                        firstDate: DateTime(2017, 1, 1), 
                         lastDate: now,
                         helpText: 'Alım tarihi seç',
                       );
@@ -390,7 +378,6 @@ class _AddState extends State<Add> {
                               day: alimTarihi!,
                             );
                           } else {
-                            // Altın/Hisse: şimdilik tarihsel otomatik alınmıyor (istersen ekleyelim)
                             alimTl = null;
                           }
                         }
