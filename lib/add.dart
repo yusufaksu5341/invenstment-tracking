@@ -10,8 +10,8 @@ class Yatirim {
   final String tur;
   final String adi;
   final double miktar;
-  final DateTime? alimTarihi;          
-  final double? alimBirimFiyatiTry;    
+  final DateTime? alimTarihi;
+  final double? alimBirimFiyatiTry;
 
   Yatirim({
     required this.tur,
@@ -33,12 +33,12 @@ class Add extends StatefulWidget {
 
 class _AddState extends State<Add> {
   String? selectedTur;
-  String? selectedAdi;  
-  String? selectedAdi2; 
-  String? selectedAdi3; 
+  String? selectedAdi; // Kripto
+  String? selectedAdi2; // Altın
+  String? selectedAdi3; // Hisse
   String? miktar;
 
-  DateTime? alimTarihi; 
+  DateTime? alimTarihi; // YENİ: Alım tarihi
 
   final List<String> turList = ['Hisse', 'Altın', 'Kripto'];
   final List<String> altinList = ['Gram', 'Çeyrek', 'Tam', 'Cumhuriyet'];
@@ -66,17 +66,21 @@ class _AddState extends State<Add> {
 
   Future<void> fetchBinanceCoins() async {
     setState(() => coinLoading = true);
-    final response =
-        await http.get(Uri.parse('https://api.binance.com/api/v3/exchangeInfo'));
+    final response = await http.get(
+      Uri.parse('https://api.binance.com/api/v3/exchangeInfo'),
+    );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final symbols = data['symbols'] as List;
-      final coins = symbols
-          .where((s) => s['quoteAsset'] == 'USDT' && s['status'] == 'TRADING')
-          .map<String>((s) => s['baseAsset'] as String)
-          .toSet()
-          .toList()
-        ..sort((a, b) => a.compareTo(b));
+      final coins =
+          symbols
+              .where(
+                (s) => s['quoteAsset'] == 'USDT' && s['status'] == 'TRADING',
+              )
+              .map<String>((s) => s['baseAsset'] as String)
+              .toSet()
+              .toList()
+            ..sort((a, b) => a.compareTo(b));
       setState(() {
         coinList = coins;
         coinLoading = false;
@@ -99,18 +103,20 @@ class _AddState extends State<Add> {
     });
   }
 
-
   Future<double?> _binanceCloseOnDay({
-    required String symbol, 
+    required String symbol,
     required DateTime day,
   }) async {
     final start = DateTime.utc(day.year, day.month, day.day);
     final end = start.add(const Duration(days: 1));
     final startMs = start.millisecondsSinceEpoch;
     final endMs = end.millisecondsSinceEpoch;
-
+    final uri2 = Uri.parse(
+      'https://www.getmidas.com/wp-json/midas-api/v1/midas_table_data?sortId=&return=doviz&order=asc&search=&page=1&per_page=1000',
+    );
     final uri = Uri.parse(
-        'https://api.binance.com/api/v3/klines?symbol=$symbol&interval=1d&startTime=$startMs&endTime=$endMs&limit=1');
+      'https://api.binance.com/api/v3/klines?symbol=$symbol&interval=1d&startTime=$startMs&endTime=$endMs&limit=1',
+    );
 
     try {
       final res = await http.get(uri);
@@ -118,7 +124,7 @@ class _AddState extends State<Add> {
         final arr = jsonDecode(res.body);
         if (arr is List && arr.isNotEmpty) {
           final k = arr[0] as List;
-          final closeStr = k[4].toString(); 
+          final closeStr = k[4].toString();
           return double.tryParse(closeStr);
         }
       }
@@ -127,7 +133,7 @@ class _AddState extends State<Add> {
   }
 
   Future<double?> _cryptoUnitTryOn({
-    required String baseAsset,  
+    required String baseAsset,
     required DateTime day,
   }) async {
     final sym = '${baseAsset.toUpperCase()}USDT';
@@ -140,7 +146,6 @@ class _AddState extends State<Add> {
     return closeUsdt * closeUsdtTry;
   }
 
-
   @override
   Widget build(BuildContext context) {
     final bool yatirimAdiSecildi =
@@ -148,7 +153,8 @@ class _AddState extends State<Add> {
         (selectedTur == 'Altın' && selectedAdi2 != null) ||
         (selectedTur == 'Hisse' && selectedAdi3 != null);
 
-    final bool ekleAktif = selectedTur != null &&
+    final bool ekleAktif =
+        selectedTur != null &&
         yatirimAdiSecildi &&
         miktar != null &&
         miktar!.isNotEmpty;
@@ -169,7 +175,11 @@ class _AddState extends State<Add> {
         centerTitle: true,
         title: const Text(
           'Yatırım Ekle',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
         actions: [
           IconButton(
@@ -178,11 +188,12 @@ class _AddState extends State<Add> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => WalletPage(yatirimlar: globalYatirimlar),
+                  builder:
+                      (context) => WalletPage(yatirimlar: globalYatirimlar),
                 ),
               );
             },
-          )
+          ),
         ],
       ),
       body: Padding(
@@ -191,8 +202,10 @@ class _AddState extends State<Add> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Yatırım Türü',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'Yatırım Türü',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               ...turList.map(
                 (tur) => RadioListTile<String>(
@@ -214,10 +227,13 @@ class _AddState extends State<Add> {
                 ),
               ),
 
+              // KRİPTO
               if (selectedTur == 'Kripto') ...[
                 const SizedBox(height: 16),
-                const Text('Yatırım Adı (Binance)',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Yatırım Adı (Binance)',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 TextField(
                   controller: _searchCtrl,
@@ -239,34 +255,41 @@ class _AddState extends State<Add> {
                 else
                   SizedBox(
                     height: 320,
-                    child: filteredCoins.isEmpty
-                        ? const Center(
-                            child: Text('Sonuç bulunamadı',
-                                style: TextStyle(color: Colors.grey)))
-                        : ListView.builder(
-                            itemCount: filteredCoins.length,
-                            itemBuilder: (context, i) {
-                              final adi = filteredCoins[i];
-                              return RadioListTile<String>(
-                                title: Text(adi),
-                                value: adi,
-                                groupValue: selectedAdi,
-                                onChanged: (val) {
-                                  setState(() {
-                                    selectedAdi = val;
-                                    miktar = null;
-                                  });
-                                },
-                              );
-                            },
-                          ),
+                    child:
+                        filteredCoins.isEmpty
+                            ? const Center(
+                              child: Text(
+                                'Sonuç bulunamadı',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                            : ListView.builder(
+                              itemCount: filteredCoins.length,
+                              itemBuilder: (context, i) {
+                                final adi = filteredCoins[i];
+                                return RadioListTile<String>(
+                                  title: Text(adi),
+                                  value: adi,
+                                  groupValue: selectedAdi,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      selectedAdi = val;
+                                      miktar = null;
+                                    });
+                                  },
+                                );
+                              },
+                            ),
                   ),
               ],
 
+              // ALTIN
               if (selectedTur == 'Altın') ...[
                 const SizedBox(height: 16),
-                const Text('Yatırım Adı',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Yatırım Adı',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 ...altinList.map(
                   (adi) => RadioListTile<String>(
                     title: Text(adi),
@@ -282,10 +305,13 @@ class _AddState extends State<Add> {
                 ),
               ],
 
+              // HİSSE
               if (selectedTur == 'Hisse') ...[
                 const SizedBox(height: 16),
-                const Text('Yatırım Adı',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Yatırım Adı',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 ...hisseList.map(
                   (adi) => RadioListTile<String>(
                     title: Text(adi),
@@ -301,9 +327,12 @@ class _AddState extends State<Add> {
                 ),
               ],
 
+              // Alım Tarihi (isteğe bağlı)
               const SizedBox(height: 16),
-              const Text('Alım Tarihi (isteğe bağlı)',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text(
+                'Alım Tarihi (isteğe bağlı)',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -316,8 +345,10 @@ class _AddState extends State<Add> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(_dateLabel(alimTarihi),
-                          style: const TextStyle(fontSize: 16)),
+                      child: Text(
+                        _dateLabel(alimTarihi),
+                        style: const TextStyle(fontSize: 16),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -327,7 +358,7 @@ class _AddState extends State<Add> {
                       final picked = await showDatePicker(
                         context: context,
                         initialDate: alimTarihi ?? now,
-                        firstDate: DateTime(2017, 1, 1), 
+                        firstDate: DateTime(2017, 1, 1),
                         lastDate: now,
                         helpText: 'Alım tarihi seç',
                       );
@@ -341,13 +372,14 @@ class _AddState extends State<Add> {
                 ],
               ),
 
-              if ( (selectedTur == 'Kripto' && selectedAdi != null) ||
-                   (selectedTur == 'Altın'  && selectedAdi2 != null) ||
-                   (selectedTur == 'Hisse'  && selectedAdi3 != null)
-              ) ...[
+              if ((selectedTur == 'Kripto' && selectedAdi != null) ||
+                  (selectedTur == 'Altın' && selectedAdi2 != null) ||
+                  (selectedTur == 'Hisse' && selectedAdi3 != null)) ...[
                 const SizedBox(height: 16),
-                const Text('Miktar',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Miktar',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 TextField(
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
@@ -362,49 +394,51 @@ class _AddState extends State<Add> {
 
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: ekleAktif
-                    ? () async {
-                        final yatTur = selectedTur!;
-                        final yatAdi = selectedAdi ?? selectedAdi2 ?? selectedAdi3 ?? '';
-                        final temiz = (miktar ?? '').replaceAll(',', '.');
-                        final miktarDouble = double.tryParse(temiz) ?? 0.0;
+                onPressed:
+                    ekleAktif
+                        ? () async {
+                          final yatTur = selectedTur!;
+                          final yatAdi =
+                              selectedAdi ?? selectedAdi2 ?? selectedAdi3 ?? '';
+                          final temiz = (miktar ?? '').replaceAll(',', '.');
+                          final miktarDouble = double.tryParse(temiz) ?? 0.0;
 
-                        double? alimTl; // TL birim alış
+                          double? alimTl; // TL birim alış
 
-                        if (alimTarihi != null) {
-                          if (yatTur == 'Kripto') {
-                            alimTl = await _cryptoUnitTryOn(
-                              baseAsset: yatAdi,
-                              day: alimTarihi!,
-                            );
-                          } else {
-                            alimTl = null;
+                          if (alimTarihi != null) {
+                            if (yatTur == 'Kripto') {
+                              alimTl = await _cryptoUnitTryOn(
+                                baseAsset: yatAdi,
+                                day: alimTarihi!,
+                              );
+                            } else {
+                              alimTl = null;
+                            }
                           }
+
+                          globalYatirimlar.add(
+                            Yatirim(
+                              tur: yatTur,
+                              adi: yatAdi,
+                              miktar: miktarDouble,
+                              alimTarihi: alimTarihi,
+                              alimBirimFiyatiTry: alimTl,
+                            ),
+                          );
+
+                          if (!mounted) return;
+                          setState(() {
+                            selectedTur = null;
+                            selectedAdi = null;
+                            selectedAdi2 = null;
+                            selectedAdi3 = null;
+                            miktar = null;
+                            alimTarihi = null;
+                            _searchCtrl.clear();
+                            coinQuery = '';
+                          });
                         }
-
-                        globalYatirimlar.add(
-                          Yatirim(
-                            tur: yatTur,
-                            adi: yatAdi,
-                            miktar: miktarDouble,
-                            alimTarihi: alimTarihi,
-                            alimBirimFiyatiTry: alimTl,
-                          ),
-                        );
-
-                        if (!mounted) return;
-                        setState(() {
-                          selectedTur = null;
-                          selectedAdi = null;
-                          selectedAdi2 = null;
-                          selectedAdi3 = null;
-                          miktar = null;
-                          alimTarihi = null;
-                          _searchCtrl.clear();
-                          coinQuery = '';
-                        });
-                      }
-                    : null,
+                        : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ekleAktif ? Colors.white : Colors.grey[300],
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -415,8 +449,11 @@ class _AddState extends State<Add> {
                 ),
                 child: const Text(
                   'Ekle',
-                  style:
-                      TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ],

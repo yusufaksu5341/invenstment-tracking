@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'add.dart';
+import 'add.dart'; 
 
 class WalletPage extends StatefulWidget {
   final List<Yatirim> yatirimlar;
@@ -14,7 +14,7 @@ class WalletPage extends StatefulWidget {
 
 class _WalletPageState extends State<WalletPage> {
   double? _usdtTry;                            
-  final Map<String, double> _cryptoUsdt = {};  
+  final Map<String, double> _cryptoUsdt = {}; 
   Map<String, double>? _goldTry;               
 
   final Map<int, double?> _unitTryNow = {};
@@ -132,7 +132,7 @@ class _WalletPageState extends State<WalletPage> {
         _pnlTry[i] = null;
       }
 
-      if (mounted) setState(() {}); 
+      if (mounted) setState(() {});
     }
 
     if (mounted) setState(() => _loading = false);
@@ -258,7 +258,7 @@ class _WalletPageState extends State<WalletPage> {
   Widget _buildAvatar(Yatirim y) =>
       y.tur == 'Kripto' ? _coinAvatar(y.adi) : _fallbackAvatar(y.adi);
 
-  // ---------- Kart UI ----------
+
   String _formatQty(Yatirim y) =>
       y.tur == 'Kripto' ? y.miktar.toStringAsFixed(8) : y.miktar.toStringAsFixed(2);
 
@@ -300,10 +300,9 @@ class _WalletPageState extends State<WalletPage> {
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       child: Stack(
         children: [
-          // Kart gövdesi
           Card(
             elevation: 4,
-            margin: const EdgeInsets.only(top: 18), 
+            margin: const EdgeInsets.only(top: 18),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
@@ -312,7 +311,6 @@ class _WalletPageState extends State<WalletPage> {
                   SizedBox(width: 48, height: 48, child: _buildAvatar(y)),
                   const SizedBox(width: 14),
 
-                  // Orta: Ad + Miktar
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,7 +336,6 @@ class _WalletPageState extends State<WalletPage> {
               ),
             ),
           ),
-
           Positioned(
             left: 24,
             top: 0,

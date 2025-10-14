@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'stock_price_service.dart';
 
 
 class PriceService {
   PriceService._();
   static final PriceService instance = PriceService._();
+  final StockPriceService _stocks = StockPriceService('YOUR_ALPHA_VANTAGE_KEY');
+
 
   final http.Client _client = http.Client();
 
@@ -12,7 +15,6 @@ class PriceService {
   DateTime? _usdtTryTs;
   final Duration _usdtTryTtl = const Duration(seconds: 60);
 
-  // --- KRIPTO USDT fiyat cache ---
   final Map<String, double> _cryptoUsdt = {};
   final Map<String, DateTime> _cryptoUsdtTs = {};
   final Duration _cryptoTtl = const Duration(seconds: 30);
@@ -119,7 +121,7 @@ final symbol = '${key}USDT';
     return _goldTry?[altinTipi];
   }
 
-
+ 
   Future<double?> getStockPriceTry(String displayName) async {
     final map = <String, String>{
       'Ebebek': 'EBEBK.IS',
@@ -146,6 +148,7 @@ final symbol = '${key}USDT';
         if (price == null) return null;
 
         if (currency == 'TRY') return price;
+        // USD veya USDT ise USDTTRY ile çevir
         if (currency == 'USD' || currency == 'USDT' || currency == null) {
           final k = await _getUsdtTry();
           return price * k;
