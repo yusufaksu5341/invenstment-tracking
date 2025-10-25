@@ -1,32 +1,30 @@
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fl_chart/fl_chart.dart';
 
 class Graph extends StatefulWidget {
-  final String coinSymbol;
-  final String interval; 
-
-  const Graph({super.key, required this.coinSymbol, required this.interval});
+  const Graph({super.key});
 
   @override
   State<Graph> createState() => _GraphState();
 }
 
 class _GraphState extends State<Graph> {
+  String selectedCoin = 'BTC';
+  String selectedInterval = '1d';
   List<FlSpot> spots = [];
-  bool loading = true;
+  bool loading = false;
+  final TextEditingController _searchCtrl = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    fetchGraphData();
-  }
+  final List<String> intervals = ['1d', '1w', '1mo', '1y'];
 
   Future<void> fetchGraphData() async {
-    final symbol = '${widget.coinSymbol.toUpperCase()}USDT';
+    setState(() => loading = true);
+    final symbol = '${selectedCoin.toUpperCase()}USDT';
     final interval = '1d';
-    int limit = switch (widget.interval) {
+    int limit = switch (selectedInterval) {
       '1d' => 1,
       '1w' => 7,
       '1mo' => 30,
@@ -50,42 +48,88 @@ class _GraphState extends State<Graph> {
         }
         setState(() {
           spots = tempSpots;
-          loading = false;
         });
       }
     } catch (_) {
-      setState(() => loading = false);
+      // handle error
     }
+    setState(() => loading = false);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchGraphData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.coinSymbol.toUpperCase()} Grafiği'),
+        title: const Text('Coin Grafiği'),
         centerTitle: true,
       ),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: LineChart(
-                LineChartData(
-                  titlesData: FlTitlesData(show: true),
-                  borderData: FlBorderData(show: true),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: spots,
-                      isCurved: true,
-                      color: const Color.fromARGB(255, 128, 33, 243),
-          
-                      barWidth: 2,
-                      dotData: FlDotData(show: false),
-                    ),
-                  ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchCtrl,
+              decoration: InputDecoration(
+                hintText: 'Coin ara (ör. BTC, ETH)',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    setState(() {
+                      selectedCoin = _searchCtrl.text.trim().toUpperCase();
+                    });
+                    fetchGraphData();
+                  },
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            if (loading)
+              const CircularProgressIndicator()
+            else
+              Expanded(
+                child: LineChart(
+                  LineChartData(
+                    titlesData: FlTitlesData(show: true),
+                    borderData: FlBorderData(show: true),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: spots,
+                        isCurved: true,
+                        color: Colors.blue,
+                        barWidth: 2,
+                        dotData: FlDotData(show: false),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              children: intervals.map((interval) {
+                final isSelected = interval == selectedInterval;
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSelected ? Colors.blue : Colors.grey[300],
+                    foregroundColor: isSelected ? Colors.white : Colors.black,
+                  ),
+                  onPressed: () {
+                    setState(() => selectedInterval = interval);
+                    fetchGraphData();
+                  },
+                  child: Text(interval),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
