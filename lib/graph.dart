@@ -20,7 +20,7 @@ class _GraphState extends State<Graph> {
   List<String> coinList = [];
   List<String> filteredCoins = [];
 
-  final List<String> intervals = ['1d', '1w', '1mo', '1y'];
+  final List<String> intervals = ['Gün', 'Hafta', 'Ay', 'Yıl'];
 
   @override
   void initState() {
