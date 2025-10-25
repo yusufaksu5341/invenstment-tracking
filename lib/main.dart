@@ -22,7 +22,7 @@ class MainApp extends StatefulWidget {
 
 final List<Widget> pages = [
   WalletPage(yatirimlar: globalYatirimlar),
-  const Graph(),
+  const Graph(coinSymbol: 'BTC', interval: '1y'),
   const Add(),
   const Notifications(),
   const Settings(),

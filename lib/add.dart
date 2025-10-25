@@ -33,12 +33,12 @@ class Add extends StatefulWidget {
 
 class _AddState extends State<Add> {
   String? selectedTur;
-  String? selectedAdi; // Kripto
-  String? selectedAdi2; // Altın
-  String? selectedAdi3; // Hisse
+  String? selectedAdi; 
+  String? selectedAdi2; 
+  String? selectedAdi3; 
   String? miktar;
 
-  DateTime? alimTarihi; // YENİ: Alım tarihi
+  DateTime? alimTarihi;
 
   final List<String> turList = ['Hisse', 'Altın', 'Kripto'];
   final List<String> altinList = ['Gram', 'Çeyrek', 'Tam', 'Cumhuriyet'];
@@ -159,7 +159,7 @@ class _AddState extends State<Add> {
         miktar != null &&
         miktar!.isNotEmpty;
 
-    String _dateLabel(DateTime? d) {
+    String dateLabel(DateTime? d) {
       if (d == null) return 'Seçilmedi';
       final y = d.year.toString().padLeft(4, '0');
       final m = d.month.toString().padLeft(2, '0');
@@ -227,7 +227,7 @@ class _AddState extends State<Add> {
                 ),
               ),
 
-              // KRİPTO
+              
               if (selectedTur == 'Kripto') ...[
                 const SizedBox(height: 16),
                 const Text(
@@ -283,7 +283,7 @@ class _AddState extends State<Add> {
                   ),
               ],
 
-              // ALTIN
+              
               if (selectedTur == 'Altın') ...[
                 const SizedBox(height: 16),
                 const Text(
@@ -305,7 +305,7 @@ class _AddState extends State<Add> {
                 ),
               ],
 
-              // HİSSE
+              
               if (selectedTur == 'Hisse') ...[
                 const SizedBox(height: 16),
                 const Text(
@@ -327,7 +327,7 @@ class _AddState extends State<Add> {
                 ),
               ],
 
-              // Alım Tarihi (isteğe bağlı)
+              
               const SizedBox(height: 16),
               const Text(
                 'Alım Tarihi (isteğe bağlı)',
@@ -346,7 +346,7 @@ class _AddState extends State<Add> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        _dateLabel(alimTarihi),
+                        dateLabel(alimTarihi),
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),

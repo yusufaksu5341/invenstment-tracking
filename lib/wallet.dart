@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'add.dart'; 
+import 'add.dart';
 
 class WalletPage extends StatefulWidget {
   final List<Yatirim> yatirimlar;
@@ -13,13 +13,13 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
-  double? _usdtTry;                            
-  final Map<String, double> _cryptoUsdt = {}; 
-  Map<String, double>? _goldTry;               
+  double? _usdtTry;
+  final Map<String, double> _cryptoUsdt = {};
+  Map<String, double>? _goldTry;
 
   final Map<int, double?> _unitTryNow = {};
   final Map<int, double?> _lineTry = {};
-  final Map<int, double?> _pnlTry = {}; 
+  final Map<int, double?> _pnlTry = {};
 
   bool _loading = false;
 
@@ -37,8 +37,9 @@ class _WalletPageState extends State<WalletPage> {
   Future<double> _getUsdtTryNow() async {
     if (_usdtTry != null) return _usdtTry!;
     try {
-      final res = await http.get(Uri.parse(
-          'https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY'));
+      final res = await http.get(
+        Uri.parse('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY'),
+      );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         _usdtTry = double.tryParse(data['price'] as String) ?? 0.0;
@@ -52,8 +53,11 @@ class _WalletPageState extends State<WalletPage> {
     final key = base.toUpperCase();
     if (_cryptoUsdt.containsKey(key)) return _cryptoUsdt[key];
     try {
-      final res = await http.get(Uri.parse(
-          'https://api.binance.com/api/v3/ticker/price?symbol=${key}USDT'));
+      final res = await http.get(
+        Uri.parse(
+          'https://api.binance.com/api/v3/ticker/price?symbol=${key}USDT',
+        ),
+      );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         final p = double.tryParse(data['price'] as String);
@@ -69,17 +73,21 @@ class _WalletPageState extends State<WalletPage> {
   Future<void> _ensureGoldNow() async {
     if (_goldTry != null) return;
     try {
-      final res = await http.get(Uri.parse('https://finans.truncgil.com/today.json'));
+      final res = await http.get(
+        Uri.parse('https://finans.truncgil.com/today.json'),
+      );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
         double? sat(String keyTr) {
           final obj = data[keyTr];
           if (obj is Map) {
-            final s = (obj['Satış'] ?? obj['Satis'] ?? obj['Selling'])?.toString();
+            final s =
+                (obj['Satış'] ?? obj['Satis'] ?? obj['Selling'])?.toString();
             if (s != null) return _parseTrNum(s);
           }
           return null;
         }
+
         final map = <String, double>{};
         final gram = sat('Gram Altın');
         final ceyrek = sat('Çeyrek Altın');
@@ -156,21 +164,29 @@ class _WalletPageState extends State<WalletPage> {
   Future<String?> _coingeckoLogo(String symbol) async {
     try {
       final q = Uri.encodeComponent(symbol);
-      final r = await http
-          .get(Uri.parse('https://api.coingecko.com/api/v3/search?query=$q'));
+      final r = await http.get(
+        Uri.parse('https://api.coingecko.com/api/v3/search?query=$q'),
+      );
       if (r.statusCode == 200) {
         final data = jsonDecode(r.body);
         final List coins = data['coins'] ?? [];
-        Map<String, dynamic>? match = coins.cast<Map<String, dynamic>?>().firstWhere(
-          (c) => (c?['symbol']?.toString().toLowerCase() == symbol.toLowerCase()),
-          orElse: () => null,
-        );
+        Map<String, dynamic>? match = coins
+            .cast<Map<String, dynamic>?>()
+            .firstWhere(
+              (c) =>
+                  (c?['symbol']?.toString().toLowerCase() ==
+                      symbol.toLowerCase()),
+              orElse: () => null,
+            );
         match ??= coins.isNotEmpty ? coins.first as Map<String, dynamic> : null;
         if (match != null) {
           final id = match['id']?.toString();
           if (id != null) {
-            final cr = await http.get(Uri.parse(
-                'https://api.coingecko.com/api/v3/coins/$id?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false'));
+            final cr = await http.get(
+              Uri.parse(
+                'https://api.coingecko.com/api/v3/coins/$id?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false',
+              ),
+            );
             if (cr.statusCode == 200) {
               final cd = jsonDecode(cr.body);
               final img = cd['image'] ?? {};
@@ -222,7 +238,10 @@ class _WalletPageState extends State<WalletPage> {
     return CircleAvatar(
       radius: 24,
       backgroundColor: Colors.black,
-      child: Text(initial, style: const TextStyle(color: Colors.white, fontSize: 20)),
+      child: Text(
+        initial,
+        style: const TextStyle(color: Colors.white, fontSize: 20),
+      ),
     );
   }
 
@@ -235,7 +254,8 @@ class _WalletPageState extends State<WalletPage> {
             radius: 24,
             backgroundColor: Color(0xFFEDEDED),
             child: SizedBox(
-              width: 18, height: 18,
+              width: 18,
+              height: 18,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
           );
@@ -258,9 +278,10 @@ class _WalletPageState extends State<WalletPage> {
   Widget _buildAvatar(Yatirim y) =>
       y.tur == 'Kripto' ? _coinAvatar(y.adi) : _fallbackAvatar(y.adi);
 
-
   String _formatQty(Yatirim y) =>
-      y.tur == 'Kripto' ? y.miktar.toStringAsFixed(8) : y.miktar.toStringAsFixed(2);
+      y.tur == 'Kripto'
+          ? y.miktar.toStringAsFixed(8)
+          : y.miktar.toStringAsFixed(2);
 
   String _formatTry(double? v) => v == null ? '₺-' : '₺${v.toStringAsFixed(2)}';
 
@@ -303,7 +324,9 @@ class _WalletPageState extends State<WalletPage> {
           Card(
             elevation: 4,
             margin: const EdgeInsets.only(top: 18),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
               child: Row(
@@ -315,14 +338,22 @@ class _WalletPageState extends State<WalletPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(y.adi,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w700)),
+                        Text(
+                          y.adi,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         const SizedBox(height: 6),
-                        Text(_formatQty(y),
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w500)),
+                        Text(
+                          _formatQty(y),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -330,7 +361,9 @@ class _WalletPageState extends State<WalletPage> {
                   Text(
                     _formatTry(line),
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w700),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -339,9 +372,9 @@ class _WalletPageState extends State<WalletPage> {
           Positioned(
             left: 24,
             top: 0,
+            right: 16,
             child: _pnlChip(pnl),
-          ),
-        ],
+          ),],
       ),
     );
   }
@@ -360,31 +393,35 @@ class _WalletPageState extends State<WalletPage> {
         foregroundColor: Colors.black,
         actions: [
           IconButton(
-            icon: _loading
-                ? const SizedBox(
-                    width: 18, height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.refresh),
+            icon:
+                _loading
+                    ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Icon(Icons.refresh),
             onPressed: _loading ? null : _refreshPrices,
             tooltip: 'Fiyatları Güncelle',
           ),
         ],
       ),
-      body: items.isEmpty
-          ? const Center(
-              child: Text(
-                'Henüz yatırım eklenmedi.',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+      body:
+          items.isEmpty
+              ? const Center(
+                child: Text(
+                  'Henüz yatırım eklenmedi.',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              )
+              : RefreshIndicator(
+                onRefresh: () async => _refreshPrices(),
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(top: 8, bottom: 8),
+                  itemCount: items.length,
+                  itemBuilder: (context, i) => _buildRow(i, items[i]),
+                ),
               ),
-            )
-          : RefreshIndicator(
-              onRefresh: () async => _refreshPrices(),
-              child: ListView.builder(
-                padding: const EdgeInsets.only(top: 8, bottom: 8),
-                itemCount: items.length,
-                itemBuilder: (context, i) => _buildRow(i, items[i]),
-              ),
-            ),
     );
   }
 }
