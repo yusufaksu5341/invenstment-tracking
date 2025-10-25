@@ -93,7 +93,7 @@ class _GraphState extends State<Graph> {
         title: const Text('Coin Grafiği'),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -106,27 +106,24 @@ class _GraphState extends State<Graph> {
               onChanged: filterCoins,
             ),
             if (filteredCoins.isNotEmpty)
-              SizedBox(
-                height: 200,
-                child: Expanded(
-                  child: ListView.builder(
-                    itemCount: filteredCoins.length,
-                    itemBuilder: (context, index) {
-                      final coin = filteredCoins[index];
-                      return ListTile(
-                        title: Text(coin),
-                        onTap: () {
-                          setState(() {
-                            selectedCoin = coin;
-                            _searchCtrl.text = coin;
-                            filteredCoins.clear();
-                          });
-                          fetchGraphData();
-                        },
-                      );
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: filteredCoins.length,
+                itemBuilder: (context, index) {
+                  final coin = filteredCoins[index];
+                  return ListTile(
+                    title: Text(coin),
+                    onTap: () {
+                      setState(() {
+                        selectedCoin = coin;
+                        _searchCtrl.text = coin;
+                        filteredCoins.clear();
+                      });
+                      fetchGraphData();
                     },
-                  ),
-                ),
+                  );
+                },
               ),
             const SizedBox(height: 16),
             if (selectedCoin != null)
